@@ -1,0 +1,23 @@
+{
+  "name": "simple-mvvm",
+  "version": "1.0.0",
+  "description": "A simple implementation to frontend mvvm.",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "npm mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BHznJNs/simple-mvvm.git"
+  },
+  "keywords": [
+    "mvvm"
+  ],
+  "author": "BHznJNs",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/BHznJNs/simple-mvvm/issues"
+  },
+  "homepage": "https://github.com/BHznJNs/simple-mvvm#readme"
+}
