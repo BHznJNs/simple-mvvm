@@ -1,56 +1,142 @@
 /**
  * Component options properties:
- * data: Object -> this.$
+ * name: String
+ * data: Object -> this.$d
  * props: Array
+ * methods: Object
  * mixins: Array -> Object.assign
  * render: Function
  */
+
+const proxyTemplate = {
+    set(target, key, value) {
+        const bindedMethods = target.__eventMap.get(key)
+        if (bindedMethods) {
+            for (const method of bindedMethods) {
+                method(value)
+            }
+            Reflect.set(target, key, value)
+            return true
+        } else {
+            throw new Error(`[MVVM] Error: component property "${key}" is not defined.`)
+        }
+    },
+    get(target, key) {
+        return Reflect.get(target, key)
+    }
+}
 
 /**
  * ------------------------------------
  */
 
 class Component extends DocumentFragment {
-    $ = {}
-    target = null
+    #$d = { // $data
+        __eventMap: new Map()
+    }
+    #$p = { // $props
+        __eventMap: new Map()
+    }
+    $m = {}
 
     constructor(options) {
         super()
 
-        Object.assign(this.$, options.data)
+        this.$data = new Proxy(this.#$d, proxyTemplate)
+        this.$d = this.$data
+        this.$props = new Proxy(this.#$p, proxyTemplate)
+        this.$p = this.$props
+
+        Object.assign(this.#$d, options.data)
+        this.propsKeys = options.props
+        this.#methodsLoad(options.methods)
 
         // Load render function
-        const renderEl = options.render(this)
-        this.target = renderEl
+        const renderEl = options.render.bind(this)()
+        // Set component name attribute
+        if (options.name) {
+            renderEl.setAttribute("name", options.name)
+        }
+        this.appendChild(renderEl)
 
         return this
     }
 
-    bind(el, componentKey, elKey) {
-        // Check is key exists
-        if (!(componentKey in this.$)) {
-            throw new Error(`Key ${componentKey} is not defined in this component.`)
+    /**
+     * Resource load methods start 
+     */
+    #methodsLoad(methods) {
+        for (let name in methods) {
+            this.$m[name] = methods[name].bind(this)
         }
-        if (!(elKey in el)) {
-            throw new Error(`Attribute ${elKey} is not found in this element.`)
+    }
+    #mixinsLoad(mixins) {
+        // 
+    }
+    /**
+     * Resource load methods end 
+     */
+
+    /**
+     * Bind methods start
+     */
+    #bind(from, key, bindCallback) {
+        const eventMap = this[from].__eventMap
+        const target = eventMap.get(key)
+        if (!target) {
+            eventMap.set(key, [])
         }
+        eventMap.get(key).push(bindCallback)
+    }
 
-        // Define inside key start with `__`
-        const insideComponentKey = "__" + componentKey
-
-        // Sync value to the target element
-        el[elKey] = this.$[componentKey]
-        this.$[insideComponentKey] = this.$[componentKey]
-
-        Object.defineProperty(this.$, componentKey, {
-            set(newVal) {
-                this[insideComponentKey] = newVal
-                el[elKey] = newVal
-            },
-            get() {
-                return this[insideComponentKey]
-            }
+    propBind(el, from, componentKey, elProp) {
+        // Before bind property, update the value
+        // of property of the element
+        // el[elProp] = this[from][componentKey]
+        this.#bind(from, componentKey, (newVal) => {
+            el[elProp] = newVal
         })
+    }
+
+    attrBind(el, from, componentKey, elAttr) {
+        // Before bind attribute, update the value
+        // of attribute of the element
+        el.setAttribute(elAttr, this[from][componentKey])
+        this.#bind(from, componentKey, (newVal) => {
+            el.setAttribute(elAttr, newVal)
+        })
+    }
+
+    classBind(el, from, key, className) {
+        this.#bind(from, key, (newVal) => {
+            el.classList.toggle(className, Boolean(newVal))
+        })
+    }
+
+    formBind(el, from, componentKey) {
+        const selfData = this[from]
+        el.addEventListener("change", () => {
+            const newVal = el.value
+            Reflect.set(selfData, componentKey, newVal)
+        })
+    }
+    /**
+     * Bind methods end
+     */
+
+    setReactProps(child, selfKey, childKey) {
+        this.#bind("$d", selfKey, (newVal) => {
+            console.log(child)
+            child.$p[childKey] = newVal
+        })
+    }
+
+    receiveProps(props) {
+        for (const key of this.propsKeys) {
+            if (key in props) {
+                Reflect.set(this.#$p, key, props[key])
+            }
+        }
     }
 }
 

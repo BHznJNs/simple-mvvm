@@ -1,5 +1,6 @@
 import Component from "./component.js"
 import Mixin from "../utils/Mixin.js"
+import fragment from "../utils/fragment.js"
 import el from "../utils/el.js"
 
 class Mvvm {
@@ -12,5 +13,8 @@ class Mvvm {
     }
 }
 
-export { Component, Mixin, el }
+export {
+    Component, Mixin,
+    el, fragment,
+}
 export default Mvvm

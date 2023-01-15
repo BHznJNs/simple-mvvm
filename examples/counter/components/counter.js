@@ -1,12 +1,13 @@
 import { Component, el } from "../../../src/index.js"
 
 const counter = new Component({
+    name: "counter",
     data: {
         count: 0,
     },
     render(self) {
         const countNum = el("span")
-        self.bind(countNum, "count", "textContent")
+        self.propBind(countNum, "count", "textContent")
 
         const presentation = el(
             "h1", null,
@@ -22,7 +23,7 @@ const counter = new Component({
             {
                 textContent: "Add",
                 onclick() {
-                    self.$.count += 1
+                    self.$d.count += 1
                 }
             }
         )

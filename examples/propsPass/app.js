@@ -1,9 +1,9 @@
 import { Component } from "../../src/index.js"
-import counter from "./components/counter.js"
+import parent from "./components/parent.js"
 
 const app = new Component({
     render() {
-        return counter
+        return parent
     }
 })
 
