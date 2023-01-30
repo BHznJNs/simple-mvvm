@@ -1,20 +1,17 @@
-/**
- * Component options properties:
- * name: String
- * data: Object -> this.$d
- * props: Array
- * methods: Object
- * mixins: Array -> Object.assign
- * render: Function
- */
-
 const proxyTemplate = {
     set(target, key, value) {
         const bindedMethods = target.__eventMap.get(key)
         if (bindedMethods) {
             for (const method of bindedMethods) {
-                method(value)
+                const newVal = value
+                const oldVal = Reflect.get(target, key)
+                method(newVal, oldVal)
             }
+            Reflect.set(target, key, value)
+            return true
+        } else if (key in target) {
+            // This branch is used when key is not binded but
+            // the user want to modify it.
             Reflect.set(target, key, value)
             return true
         } else {
@@ -30,31 +27,63 @@ const proxyTemplate = {
  * ------------------------------------
  */
 
+/**
+ * Component options properties:
+ * name    : String
+ * parent  : Component
+ * data    : Object -> this.$d
+ * props   : Array
+ * methods : Object
+ * mixins  : Array -> Object.assign
+ * provide : Function
+ * inject  : Array
+ * render  : Function
+ */
+
+/**
+ * ------------------------------------
+ */
+
 class Component extends DocumentFragment {
-    #$d = { // $data
-        __eventMap: new Map()
-    }
-    #$p = { // $props
-        __eventMap: new Map()
-    }
-    $m = {}
+    // data object
+    #$data = null
+    $data  = null
+    $d     = null
+    
+    // properties object
+    #$props   = null
+    $props    = null
+    $p        = null
+    propsKeys = null
+
+    // methods  |  alias
+    $methods = {}; $m = this.$methods
+    // inject   |  alias
+    $inject  = {}; $i = this.$inject
+
+    // --- --- ---
+
+    $parent    = null
+    $propsKeys = null
+
+    #eventMap = new Map()
+    __provide = null
 
     constructor(options) {
         super()
 
-        this.$data = new Proxy(this.#$d, proxyTemplate)
-        this.$d = this.$data
-        this.$props = new Proxy(this.#$p, proxyTemplate)
-        this.$p = this.$props
+        this.parent = options.parent
 
-        Object.assign(this.#$d, options.data)
-        this.propsKeys = options.props
+        this.#data_propsLoad(options)
         this.#methodsLoad(options.methods)
+        this.#watcherLoad(options.watch)
+        this.#provideLoad(options.provide)
+        this.#injectsLoad(options.inject)
 
         // Load render function
-        const renderEl = options.render.bind(this)()
+        const renderEl = options.render.call(this, this)
         // Set component name attribute
-        if (options.name) {
+        if (options.name && renderEl instanceof HTMLElement) {
             renderEl.setAttribute("name", options.name)
         }
         this.appendChild(renderEl)
@@ -63,15 +92,70 @@ class Component extends DocumentFragment {
     }
 
     /**
-     * Resource load methods start 
+     * Resource load methods start
      */
+    #data_propsLoad({ data, props }) {
+        if (data) {
+            this.#$data = { __eventMap: new Map() }
+            this.$data  = new Proxy(this.#$data, proxyTemplate)
+            this.$d     = this.$data // alias
+
+            Object.assign(this.#$data, data)
+        }
+        if (props) {
+            this.#$props = { __eventMap: new Map() }
+            this.$props  = new Proxy(this.#$props, proxyTemplate)
+            this.$p      = this.$props // alias
+
+            this.propsKeys = props
+        }
+    }
     #methodsLoad(methods) {
         for (let name in methods) {
             this.$m[name] = methods[name].bind(this)
         }
     }
-    #mixinsLoad(mixins) {
-        // 
+    #watcherLoad(watchers) {
+        if (watchers) {
+            const keys = Object.keys(watchers)
+
+            // Default to watch data under the $data
+            if (watchers[keys[0]] instanceof Function) {
+                for (const key of keys) {
+                    this.#bind("$d", key, (newVal, oldVal) => {
+                       watchers[key](newVal, oldVal)
+                    })
+                }
+            } else {
+                for (const key of keys) {
+                    this.#watcherLoad(watchers[key])
+                }
+            }
+        }
+    }
+    #provideLoad(providers) {
+        if (providers) {
+            this.__provide = providers()
+        }
+    }
+    #injectsLoad(injects) {
+        const self = this
+        function provideFinder(ctx, key) {
+            // Start with this.parent
+            if (ctx.__provide && key in ctx.__provide) {
+                self.$i[key] = ctx.__provide[key]
+            } else if (!ctx.__provide && ctx.parent) {
+                provideFinder(ctx.parent, key)
+            } else {
+                console.warn(`[MVVM] Warning: injected value "${key}" is not provided.`)
+            }
+        }
+
+        if (injects) {
+            for (const item of injects) {
+                provideFinder(self.parent, item)
+            }
+        }
     }
     /**
      * Resource load methods end 
@@ -101,7 +185,7 @@ class Component extends DocumentFragment {
     attrBind(el, from, componentKey, elAttr) {
         // Before bind attribute, update the value
         // of attribute of the element
-        el.setAttribute(elAttr, this[from][componentKey])
+        // el.setAttribute(elAttr, this[from][componentKey])
         this.#bind(from, componentKey, (newVal) => {
             el.setAttribute(elAttr, newVal)
         })
@@ -124,6 +208,9 @@ class Component extends DocumentFragment {
      * Bind methods end
      */
 
+    /**
+     * Props processing methods start
+     */
     setReactProps(child, selfKey, childKey) {
         this.#bind("$d", selfKey, (newVal) => {
             console.log(child)
@@ -134,10 +221,45 @@ class Component extends DocumentFragment {
     receiveProps(props) {
         for (const key of this.propsKeys) {
             if (key in props) {
-                Reflect.set(this.#$p, key, props[key])
+                Reflect.set(this.#$props, key, props[key])
             }
         }
     }
+    /**
+     * Props processing methods end
+     */
+
+    /**
+     * Component event handles start
+     */
+    __trigger(eventName, dataArr) {
+        const eventMap = this.#eventMap
+        const targetEvent = eventMap.get(eventName)
+
+        if (targetEvent) {
+            dataArr.push(this)
+
+            for (const handler of targetEvent) {
+                handler.apply(this, dataArr)
+            }
+        } else {
+            throw new Error(`[MVVM] Error: component event "${eventName}" is not defined.`)
+        }
+    }
+    setEvent(eventName, eventHandler) {
+        const eventMap = this.#eventMap
+        const target = eventMap.get(eventName)
+        if (!target) {
+            eventMap.set(eventName, [])
+        }
+        eventMap.get(eventName).push(eventHandler)
+    }
+    emit(eventName, ...data) {
+        this.parent.__trigger(eventName, data)
+    }
+    /**
+     * Component event handles end
+     */
 }
 
 export default Component

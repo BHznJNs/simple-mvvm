@@ -2,10 +2,10 @@
   "name": "simple-mvvm",
   "version": "1.0.0",
   "description": "A simple implementation to frontend mvvm.",
-  "main": "index.js",
+  "main": "index.mjs",
   "type": "module",
   "scripts": {
-    "test": "npm mocha"
+    "build": "rollup -c test/rollup.config.js"
   },
   "repository": {
     "type": "git",
@@ -19,5 +19,9 @@
   "bugs": {
     "url": "https://github.com/BHznJNs/simple-mvvm/issues"
   },
-  "homepage": "https://github.com/BHznJNs/simple-mvvm#readme"
+  "homepage": "https://github.com/BHznJNs/simple-mvvm#readme",
+  "devDependencies": {
+    "chai": "^4.3.7",
+    "mocha": "^10.2.0"
+  }
 }

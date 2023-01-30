@@ -19,9 +19,9 @@ const parent = new Component({
     },
     render() {
         const self = this
-        const childComponent = child({
+        const childComponent = child({props: {
             content: self.$d.childContent
-        })
+        }})
         this.setReactProps(childComponent, "childContent", "content")
 
         return el("div", {

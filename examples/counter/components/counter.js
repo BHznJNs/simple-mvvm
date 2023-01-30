@@ -1,13 +1,17 @@
-import { Component, el } from "../../../src/index.js"
+import { Component, el, fragment } from "../../../src/index.js"
 
 const counter = new Component({
     name: "counter",
     data: {
         count: 0,
     },
-    render(self) {
-        const countNum = el("span")
-        self.propBind(countNum, "count", "textContent")
+    render() {
+        const self = this
+
+        const countNum = el("span", {
+            textContent: this.$d.count
+        })
+        this.propBind(countNum, "$d", "count", "textContent")
 
         const presentation = el(
             "h1", null,
@@ -28,11 +32,9 @@ const counter = new Component({
             }
         )
 
-        const root = el(
-            "div", null,
-            [presentation, button]
-        )
-        return root
+        return fragment([
+            presentation, button
+        ])
     }
 })
 

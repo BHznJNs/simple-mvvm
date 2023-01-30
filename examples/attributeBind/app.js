@@ -9,6 +9,9 @@ const app = new Component({
             textContent: "Attribute example: click to change title of this element.",
             onclick: () => {
                 this.$d.message = "Happy new year!"
+            },
+            attr: {
+                title: this.$d.message
             }
         })
         this.attrBind(presentation, "$d", "message", "title")

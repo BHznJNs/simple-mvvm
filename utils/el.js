@@ -2,6 +2,13 @@ export default function (tagName, options, children) {
     const el = document.createElement(tagName)
 
     if (options) {
+        const attr = options.attr
+        if (attr) {
+            for (let key in attr) {
+                el.setAttribute(key, attr[key])
+            }
+            Reflect.deleteProperty(options, "attr")
+        }
         Object.assign(el, options)
     }
 

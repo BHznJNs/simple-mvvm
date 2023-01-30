@@ -1,6 +1,6 @@
 import { Component, el } from "../../../src/index.js"
 
-function child(props) {
+function child({ props }) {
     const self = new Component({
         name: "child",
         props: ["content"],

@@ -1,7 +1,8 @@
-import Component from "./component.js"
-import Mixin from "../utils/Mixin.js"
-import fragment from "../utils/fragment.js"
+import Component from "./Component.js"
+import Iterator from "./Iterator.js"
 import el from "../utils/el.js"
+import fragment from "../utils/fragment.js"
+import text from "../utils/text.js"
 
 class Mvvm {
     constructor(app) {
@@ -14,7 +15,7 @@ class Mvvm {
 }
 
 export {
-    Component, Mixin,
-    el, fragment,
+    Component, Iterator,
+    el, fragment, text,
 }
 export default Mvvm
