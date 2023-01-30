@@ -174,18 +174,12 @@ class Component extends DocumentFragment {
     }
 
     propBind(el, from, componentKey, elProp) {
-        // Before bind property, update the value
-        // of property of the element
-        // el[elProp] = this[from][componentKey]
         this.#bind(from, componentKey, (newVal) => {
             el[elProp] = newVal
         })
     }
 
     attrBind(el, from, componentKey, elAttr) {
-        // Before bind attribute, update the value
-        // of attribute of the element
-        // el.setAttribute(elAttr, this[from][componentKey])
         this.#bind(from, componentKey, (newVal) => {
             el.setAttribute(elAttr, newVal)
         })
