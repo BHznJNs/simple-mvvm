@@ -1,11 +1,11 @@
 import { Component, el } from "../../../src/index.js"
 
-function child({parent}) {
+function child({ parent }) {
     const self = new Component({
         parent,
         render(self) {
             return el("p", {
-                textContent: "Child text",
+                textContent: "Child text, click me to emit",
                 onclick() {
                     self.emit("test-event", "test data1", "test data2")
                 }

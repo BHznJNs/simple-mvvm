@@ -5,7 +5,7 @@ const app = new Component({
     name: "app",
     provide() {
         return {
-            text: "test content"
+            text: "test content provided from app"
         }
     },
     render(self) {

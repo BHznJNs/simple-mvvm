@@ -79,6 +79,10 @@ const app = new Component({
                         const newDataArray = [
                             "new",
                             "data",
+                            "new",
+                            "data",
+                            "new",
+                            "data",
                         ]
                         presentation.resetWith(newDataArray)
                         self.$d.presentData = newDataArray

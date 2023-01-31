@@ -211,13 +211,14 @@ class Iterator extends DocumentFragment {
     // Update data with a new given dataArray.
     resetWith(newDataArray) {
         function pushWith(fragment) {
+            console.log("pushWith", fragment)
             if (fragment) {
                 const peak   = this.#peak || this.#baseNode
                 const parent = this.#baseNode.parentNode
 
                 parent.insertBefore(fragment, peak.nextSibling)
 
-                this.#peak = addedNode.lastChild
+                this.#peak = fragment.lastChild
                 if (!this.#head) {
                     this.#head = addedNode.firstChild
                 }
@@ -230,8 +231,8 @@ class Iterator extends DocumentFragment {
             if (oldDataArray[index]) {
                 this.update(index, newDataArray[index])
             } else {
-                // If newDataArray.length > oldDataArray.length
-                // this.push(newDataArray[index])
+                // If `newDataArray` is longer than `oldDataArray`,
+                // insert a tempFragment.
                 if (!tempFragment) {
                     tempFragment = new DocumentFragment()
                 }

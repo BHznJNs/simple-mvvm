@@ -207,7 +207,6 @@ class Component extends DocumentFragment {
      */
     setReactProps(child, selfKey, childKey) {
         this.#bind("$d", selfKey, (newVal) => {
-            console.log(child)
             child.$p[childKey] = newVal
         })
     }
@@ -234,7 +233,7 @@ class Component extends DocumentFragment {
             dataArr.push(this)
 
             for (const handler of targetEvent) {
-                handler.apply(this, dataArr)
+                handler(this, dataArr)
             }
         } else {
             throw new Error(`[MVVM] Error: component event "${eventName}" is not defined.`)
