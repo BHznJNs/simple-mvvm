@@ -1,18 +1,17 @@
-import { Component, el } from "../../../src/index.js"
+import { Component } from "../../../src/index.js"
 
 function child({ props }) {
     const self = new Component({
         name: "child",
         props: ["content"],
         render() {
-            const root = el("p", {
-                textContent: props.content
+            this.receiveProps(props)
+            const root = this.el("p", {
+                textContent: this.$p.content
             })
-            this.propBind(root, "$p", "content", "textContent")
             return root
         }
     })
-    self.receiveProps(props)
     return self
 }
 

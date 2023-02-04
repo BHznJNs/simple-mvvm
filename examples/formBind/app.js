@@ -1,17 +1,19 @@
-import { Component, el, fragment } from "../../src/index.js"
+import { Component, staticEl, fragment } from "../../src/index.js"
 
 const app = new Component({
     data: {
         text: ""
     },
-    render() {
-        const input = el("input", {
-            placeholder: "please enter something"
+    render(self) {
+        const input = staticEl("input", {
+            placeholder: "please enter something",
+            onchange() {
+                self.$d.text = this.value
+            }
         })
-        const span = el("span")
-
-        this.formBind(input, "$d", "text")
-        this.propBind(span, "$d", "text", "textContent")
+        const span = this.el("span", {
+            textContent: this.$d.text
+        })
 
         return fragment([
             input, span

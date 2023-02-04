@@ -1,32 +1,3 @@
-const proxyTemplate = {
-    set(target, key, value) {
-        const bindedMethods = target.__eventMap.get(key)
-        if (bindedMethods) {
-            for (const method of bindedMethods) {
-                const newVal = value
-                const oldVal = Reflect.get(target, key)
-                method(newVal, oldVal)
-            }
-            Reflect.set(target, key, value)
-            return true
-        } else if (key in target) {
-            // This branch is used when key is not binded but
-            // the user want to modify it.
-            Reflect.set(target, key, value)
-            return true
-        } else {
-            throw new Error(`[MVVM] Error: component property "${key}" is not defined.`)
-        }
-    },
-    get(target, key) {
-        return Reflect.get(target, key)
-    }
-}
-
-/**
- * ------------------------------------
- */
-
 /**
  * Component options properties:
  * name    : String
@@ -46,12 +17,12 @@ const proxyTemplate = {
 
 class Component extends DocumentFragment {
     // data object
-    #$data = null
-    $data  = null
-    $d     = null
+    #data = null
+    $data = null
+    $d    = null
     
     // properties object
-    #$props   = null
+    #props    = null
     $props    = null
     $p        = null
     propsKeys = null
@@ -91,21 +62,54 @@ class Component extends DocumentFragment {
         return this
     }
 
+    #proxyTemplateFactory(name) {
+        const self = this
+
+        return {
+            set(target, key, value) {
+                const bindedMethods = self.#eventMap.get(name + key)
+                if (bindedMethods) {
+                    for (const method of bindedMethods) {
+                        const newVal = value
+                        const oldVal = Reflect.get(target, key)
+                        method(newVal, oldVal)
+                    }
+                    Reflect.set(target, key, value)
+                    return true
+                } else if (key in target) {
+                    // This branch is used when key is not binded but
+                    // the user want to modify it.
+                    Reflect.set(target, key, value)
+                    return true
+                } else {
+                    throw new Error(`[MVVM] Error: component property "${key}" is not defined.`)
+                }
+            },
+            get(target, key) {
+                return {
+                    key, from: name,
+                    __is_ref__: true,
+                    value: Reflect.get(target, key)
+                }
+            }
+        }
+    }
+
     /**
      * Resource load methods start
      */
     #data_propsLoad({ data, props }) {
         if (data) {
-            this.#$data = { __eventMap: new Map() }
-            this.$data  = new Proxy(this.#$data, proxyTemplate)
-            this.$d     = this.$data // alias
+            this.#data = {}
+            this.$data = new Proxy(this.#data, this.#proxyTemplateFactory("$d"))
+            this.$d    = this.$data // alias
 
-            Object.assign(this.#$data, data)
+            Object.assign(this.#data, data)
         }
         if (props) {
-            this.#$props = { __eventMap: new Map() }
-            this.$props  = new Proxy(this.#$props, proxyTemplate)
-            this.$p      = this.$props // alias
+            this.#props = {}
+            this.$props = new Proxy(this.#props, this.#proxyTemplateFactory("$p"))
+            this.$p     = this.$props // alias
 
             this.propsKeys = props
         }
@@ -165,12 +169,13 @@ class Component extends DocumentFragment {
      * Bind methods start
      */
     #bind(from, key, bindCallback) {
-        const eventMap = this[from].__eventMap
-        const target = eventMap.get(key)
+        const eventKey = from + key
+        const eventMap = this.#eventMap
+        const target = eventMap.get(eventKey)
         if (!target) {
-            eventMap.set(key, [])
+            eventMap.set(eventKey, [])
         }
-        eventMap.get(key).push(bindCallback)
+        eventMap.get(eventKey).push(bindCallback)
     }
 
     propBind(el, from, componentKey, elProp) {
@@ -214,7 +219,7 @@ class Component extends DocumentFragment {
     receiveProps(props) {
         for (const key of this.propsKeys) {
             if (key in props) {
-                Reflect.set(this.#$props, key, props[key])
+                Reflect.set(this.#props, key, props[key])
             }
         }
     }
@@ -253,6 +258,57 @@ class Component extends DocumentFragment {
     /**
      * Component event handles end
      */
+
+    el(tagName, options, children) {
+        function assignProperties(el, options) {
+            for (let key in options) {
+                const current = options[key]
+
+                let value
+
+                if (current.__is_ref__) {
+                    value = current.value
+
+                    // this.propBind(el, current.from, current.key, key)
+                    this.#bind(current.from, current.key, (newVal) => {
+                        el[key] = newVal
+                    })
+                } else {
+                    value = current
+                }
+
+                el[key] = value
+            }
+        }
+
+        const el = document.createElement(tagName)
+
+        if (options) {
+            const attr = options.attr
+            if (attr) {
+                for (let key in attr) {
+                    el.setAttribute(key, attr[key])
+                }
+                Reflect.deleteProperty(options, "attr")
+            }
+
+            assignProperties.call(this, el, options)
+            // Object.assign(el, options)
+        }
+    
+        if (children) {
+            // Check is `children` an Array or single Element
+            if (children instanceof Array) {
+                for (const childEl of children) {
+                    el.appendChild(childEl)
+                }
+            } else {
+                el.appendChild(children)
+            }
+        }
+
+        return el
+    }
 }
 
 export default Component

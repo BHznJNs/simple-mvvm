@@ -1,4 +1,4 @@
-import { Component, Iterator, el } from "../../src/index.js"
+import { Component, Iterator, staticEl } from "../../src/index.js"
 
 const app = new Component({
     data: {
@@ -8,33 +8,37 @@ const app = new Component({
     },
     render(self) {
         const presentation = new Iterator({
-            dataArray : this.$d.presentData,
+            dataArray : this.$d.presentData.value,
             willChange: [ "textContent" ],
             render: (value) => {
-                return el("p", {
+                return staticEl("p", {
                     textContent: value
                 })
             }
         })
 
-        const contentInput = el("input", {
+        const contentInput = staticEl("input", {
             type: "text",
-            value: "test content"
+            value: "test content",
+            onchange() {
+                self.$d.content = this.value
+            }
         })
-        this.formBind(contentInput, "$d", "content")
 
-        const numberInput = el("input", {
+        const numberInput = staticEl("input", {
             type: "number",
-            value: this.$d.index
+            value: 0,
+            onchange() {
+                self.$d.index = this.value
+            }
         })
-        this.formBind(numberInput, "$d", "index")
 
         const btnBlock = new Iterator({
             dataArray: [
                 {
                     name: "Push",
                     callback: () => {
-                        presentation.push(self.$d.content)
+                        presentation.push(self.$d.content.value)
                     }
                 },
                 {
@@ -46,7 +50,7 @@ const app = new Component({
                 {
                     name: "Unshift",
                     callback: () => {
-                        presentation.unshift(self.$d.content)
+                        presentation.unshift(self.$d.content.value)
                     }
                 },
                 {
@@ -58,19 +62,19 @@ const app = new Component({
                 {
                     name: "Update",
                     callback: () => {
-                        presentation.update(self.$d.index, self.$d.content)
+                        presentation.update(self.$d.index.value, self.$d.content.value)
                     }
                 },
                 {
                     name: "Insert",
                     callback: () => {
-                        presentation.insert(self.$d.index, self.$d.content)
+                        presentation.insert(self.$d.index.value, self.$d.content.value)
                     }
                 },
                 {
                     name: "Remove",
                     callback: () => {
-                        presentation.remove(self.$d.index)
+                        presentation.remove(self.$d.index.value)
                     }
                 },
                 {
@@ -90,7 +94,7 @@ const app = new Component({
                 },
             ],
             render({name, callback}) {
-                return el("button", {
+                return staticEl("button", {
                     textContent: name,
                     onclick: callback
                 })
@@ -102,7 +106,7 @@ const app = new Component({
             dataArray: tagNameTestArr,
             willChange: "tagName",
             render(tagName, index) {
-                return el(tagName, {
+                return staticEl(tagName, {
                     textContent: "Test content",
                     onclick: () => {
                         this.update(index, "h" + (index + 2))
@@ -111,12 +115,11 @@ const app = new Component({
             }
         })
 
-        const root = el("div", null, [
+        const root = staticEl("div", null, [
             presentation, contentInput, numberInput,
-            el("div", null, btnBlock), tagNameTestIterator
+            staticEl("div", null, btnBlock), tagNameTestIterator
         ])
 
-        globalThis.app = self
         return root
     }
 })

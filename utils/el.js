@@ -23,5 +23,5 @@ export default function (tagName, options, children) {
         }
     }
 
-    return el;
+    return el
 }

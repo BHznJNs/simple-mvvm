@@ -5,13 +5,10 @@ const counter = new Component({
     data: {
         count: 0,
     },
-    render() {
-        const self = this
-
-        const countNum = el("span", {
+    render(self) {
+        const countNum = this.el("span", {
             textContent: this.$d.count
         })
-        this.propBind(countNum, "$d", "count", "textContent")
 
         const presentation = el(
             "h1", null,

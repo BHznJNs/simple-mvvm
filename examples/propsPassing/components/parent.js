@@ -1,4 +1,4 @@
-import { Component, el } from "../../../src/index.js"
+import { Component, staticEl } from "../../../src/index.js"
 import child from "./child.js"
 
 const parent = new Component({
@@ -10,6 +10,7 @@ const parent = new Component({
         contentReverse() {
             const reversedText =
                 this.$d.childContent
+                    .value
                     .split("")
                     .reverse()
                     .join("")
@@ -20,14 +21,13 @@ const parent = new Component({
     render() {
         const self = this
         const childComponent = child({props: {
-            content: self.$d.childContent
+            content: self.$d.childContent.value
         }})
         this.setReactProps(childComponent, "childContent", "content")
 
-        return el("div", {
-                onclick: this.$m.contentReverse
-            }, childComponent
-        )
+        return staticEl("div", {
+            onclick: this.$m.contentReverse
+        }, childComponent)
     }
 })
 

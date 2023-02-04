@@ -1,6 +1,6 @@
-import Component from "./Component.js"
+import Component from "./Component.temp.js"
 import Iterator from "./Iterator.js"
-import el from "../utils/el.js"
+import staticEl from "../utils/el.js"
 import fragment from "../utils/fragment.js"
 import text from "../utils/text.js"
 
@@ -16,6 +16,7 @@ class Mvvm {
 
 export {
     Component, Iterator,
-    el, fragment, text,
+    staticEl, text,
+    fragment,
 }
 export default Mvvm

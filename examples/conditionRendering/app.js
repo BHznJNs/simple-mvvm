@@ -1,15 +1,15 @@
-import { Component, el } from "../../src/index.js"
+import { Component, staticEl } from "../../src/index.js"
 
 const component1 = new Component({
     render() {
-        return el("div", {
+        return staticEl("div", {
             textContent: "Component 1"
         })
     }
 })
 const component2 = new Component({
     render() {
-        return el("div", {
+        return staticEl("div", {
             textContent: "Component 2"
         })
     }
@@ -21,7 +21,7 @@ const app = new Component({
         showing: false
     },
     render() {
-        if (this.$d.showing) {
+        if (this.$d.showing.value) {
             return component1
         } else {
             return component2

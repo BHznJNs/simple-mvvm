@@ -1,4 +1,4 @@
-import { Component, el } from "../../src/index.js"
+import { Component } from "../../src/index.js"
 
 const app = new Component({
     data: {
@@ -11,15 +11,13 @@ const app = new Component({
             }
         }
     },
-    render() {
-        const self = this
-        const presentation = el("p", {
-            textContent: self.$data.msg,
+    render(self) {
+        const presentation = this.el("p", {
+            textContent: this.$d.msg,
             onclick() {
-                self.$data.msg = "changed"
+                self.$d.msg = "changed"
             }
         })
-        this.propBind(presentation, "$d", "msg", "textContent")
         return presentation
     }
 })

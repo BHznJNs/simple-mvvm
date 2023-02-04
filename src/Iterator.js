@@ -23,6 +23,7 @@ class Iterator extends DocumentFragment {
         }
         let index = 0
         const dataArray = this.#dataArrReference
+        console.log(dataArray)
         const peakIndex = dataArray.length - 1
 
         const baseNode = createBaseNode()

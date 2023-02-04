@@ -22,6 +22,7 @@
   "homepage": "https://github.com/BHznJNs/simple-mvvm#readme",
   "devDependencies": {
     "chai": "^4.3.7",
-    "mocha": "^10.2.0"
+    "mocha": "^10.2.0",
+    "rollup": "^3.10.0"
   }
 }
