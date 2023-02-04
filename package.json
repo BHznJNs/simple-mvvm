@@ -2,7 +2,7 @@
   "name": "@bhznjns/simple-mvvm",
   "version": "1.0.0",
   "description": "A simple implementation to frontend mvvm.",
-  "main": "index.mjs",
+  "main": "./src/index.js",
   "type": "module",
   "scripts": {
     "build": "rollup -c test/rollup.config.js"
