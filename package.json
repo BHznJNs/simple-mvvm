@@ -1,6 +1,6 @@
 {
   "name": "@bhznjns/simple-mvvm",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "A simple implementation to frontend mvvm.",
   "main": "./src/index.js",
   "type": "module",

@@ -23,7 +23,6 @@ class Iterator extends DocumentFragment {
         }
         let index = 0
         const dataArray = this.#dataArrReference
-        console.log(dataArray)
         const peakIndex = dataArray.length - 1
 
         const baseNode = createBaseNode()
@@ -212,7 +211,6 @@ class Iterator extends DocumentFragment {
     // Update data with a new given dataArray.
     resetWith(newDataArray) {
         function pushWith(fragment) {
-            console.log("pushWith", fragment)
             if (fragment) {
                 const peak   = this.#peak || this.#baseNode
                 const parent = this.#baseNode.parentNode
