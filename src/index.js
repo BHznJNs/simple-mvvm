@@ -1,6 +1,6 @@
-import Component from "./Component.temp.js"
+import Component from "./Component.js"
 import Iterator from "./Iterator.js"
-import staticEl from "../utils/el.js"
+import staticEl from "../utils/staticEl.js"
 import fragment from "../utils/fragment.js"
 import text from "../utils/text.js"
 
